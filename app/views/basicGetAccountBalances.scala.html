@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+
+<script src="http://code.jquery.com/jquery-1.7.2.js" type="text/javascript"></script>
+
+<script>
+
+    $(function () {
+
+        $("#retrieveSubmit").bind('click', function () {
+            retrieveAccountBalances();
+        });
+
+    });
+
+    function retrieveAccountBalances() {
+        var userId = $("#userId").val()
+
+        if (userId === "") {
+            alert("Please enter a user id.")
+            return
+        }
+
+        var userIdJson = JSON.stringify({userId: userId})
+        console.log("sending " + userIdJson)
+
+        jqxhr = $.ajax({
+            url: "../getAccountBalanceBasic",
+            data: userIdJson,
+            contentType: "application/json",
+            type: "POST",
+            dataType: "json"
+        })
+
+        jqxhr.done(
+                function (data) {
+                    console.log("requested data =>" + data)
+
+                    //the json is a nested array, need to fix serialization from play
+                    //for now just get the first element in the array
+                    var checkingBalances = data.checking[0]
+                    checkingBalances.forEach(function (accountAndBalance) {
+                        $("#checkingAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+                    })
+
+                    var savingsBalances = data.savings[0]
+                    savingsBalances.forEach(function (accountAndBalance) {
+                        $("#savingAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+                    })
+
+
+                    var moneyMarketBalances = data.moneyMarket[0]
+                    moneyMarketBalances.forEach(function (accountAndBalance) {
+                        $("#moneyMarketAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+                    })
+
+                })
+
+        //even thought the create tweet is working, it returns an error message
+        jqxhr.fail(
+                function (data, textStatus, errorThrown) {
+                    console.log("error:" + data)
+                })
+    }
+
+</script>
+
+
+<body>
+
+<H3>Enter User ID to Retrieve: <input type="text" id="userId" value="1"/><input type="submit" value="Submit"
+                                                                                id="retrieveSubmit"/></H3>
+
+<H3>Checking Accounts</H3>
+<ul id="checkingAccountList">
+</ul>
+
+<H3>Savings Accounts</H3>
+<ul id="savingAccountList">
+</ul>
+
+<H3>Money Market Accounts</H3>
+<ul id="moneyMarketAccountList">
+</ul>
+
+</body>
+</html>
+
