@@ -2,6 +2,7 @@ package models
 
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import akka.actor.Actor
 
 
 /**
@@ -43,8 +44,8 @@ case class SavingsAccountBalances(balances: Option[List[(Long, BigDecimal)]])
 
 case class MoneyMarketAccountBalances(balances: Option[List[(Long, BigDecimal)]])
 
-trait SavingsAccountsProxy
+trait SavingsAccountsProxy extends Actor
 
-trait CheckingAccountsProxy
+trait CheckingAccountsProxy extends Actor
 
-trait MoneyMarketAccountsProxy
+trait MoneyMarketAccountsProxy extends Actor

@@ -10,13 +10,21 @@
 
     $(function () {
 
-        $("#retrieveSubmit").bind('click', function () {
-            retrieveAccountBalances();
+        $("#blockingRetrieveSubmit").bind('click', function () {
+            retrieveAccountBalances("getAccountBalancesBlocking");
+        });
+
+        $("#asyncOneRetrieveSubmit").bind('click', function () {
+            retrieveAccountBalances("asyncOneGetAccountBalances");
+        });
+
+        $("#asyncTwoRetrieveSubmit").bind('click', function () {
+            retrieveAccountBalances("asyncTwoGetAccountBalances");
         });
 
     });
 
-    function retrieveAccountBalances() {
+    function retrieveAccountBalances(retrieveUrl) {
         var userId = $("#userId").val()
 
         if (userId === "") {
@@ -27,8 +35,15 @@
         var userIdJson = JSON.stringify({userId: userId})
         console.log("sending " + userIdJson)
 
+        var start = new Date().getTime();
+        $("#loadTime").empty()
+        $("#checkingAccountList").empty()
+        $("#savingAccountList").empty()
+        $("#moneyMarketAccountList").empty()
+
+
         jqxhr = $.ajax({
-            url: "../getAccountBalanceBasic",
+            url: "../" + retrieveUrl,
             data: userIdJson,
             contentType: "application/json",
             type: "POST",
@@ -57,6 +72,10 @@
                         $("#moneyMarketAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
                     })
 
+                    var end = new Date().getTime();
+                    var time = end - start;
+                    $("#loadTime").append(time)
+
                 })
 
         //even thought the create tweet is working, it returns an error message
@@ -71,9 +90,12 @@
 
 <body>
 
-<H3>Enter User ID to Retrieve: <input type="text" id="userId" value="1"/><input type="submit" value="Submit"
-                                                                                id="retrieveSubmit"/></H3>
+<H3>Enter User ID to Retrieve: <input type="text" id="userId" value="1"/></H3>
+<input type="submit" value="Blocking Retrieve" id="blockingRetrieveSubmit"/>
+<input type="submit" value="Async Retrieve - Step One " id="asyncOneRetrieveSubmit"/>
+<input type="submit" value="Async Retrieve - Step Two" id="asyncTwoRetrieveSubmit"/>
 
+<H3>Time to Load Account Balances: <span id="loadTime" /> milliseconds</H3>
 <H3>Checking Accounts</H3>
 <ul id="checkingAccountList">
 </ul>
