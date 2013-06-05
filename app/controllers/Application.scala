@@ -4,13 +4,14 @@ import play.api.mvc._
 import play.api.libs.json.{JsValue, Json}
 import utils.Global
 import models.AccountBalances
-import scala.concurrent.Future
+import scala.concurrent.{Promise, Future}
 import akka.util.Timeout
 import akka.pattern.ask
 import scala.concurrent.duration._
 import play.api.libs.iteratee._
 import models.GetCustomerAccountBalances
 import play.api.Logger
+import play.libs.Akka
 
 object Application extends Controller {
 
@@ -56,6 +57,37 @@ object Application extends Controller {
         (Global.accountBalanceActor ? GetCustomerAccountBalances(userId)).mapTo[AccountBalances].map {
           accountBalances =>
             Ok(Json.toJson(accountBalances))
+        }
+      }
+  }
+
+
+  def asyncThreeGetAccountBalances = Action(parse.json) {
+    request =>
+      val userIdJson = request.body
+      val userId = (userIdJson \ "userId").as[String].toLong
+
+      val promiseAccountBalance = Promise[AccountBalances]
+      val futureAccountBalance = promiseAccountBalance.future
+
+
+      import akka.actor.ActorDSL._
+      implicit val system = Akka.system()
+      implicit val ref = actor(new Act {
+        become {
+          case accountBalance: AccountBalances => promiseAccountBalance.success(accountBalance)
+        }
+      })
+      Global.accountBalanceSecondActor ! GetCustomerAccountBalances(userId)
+
+      Async {
+        import play.api.libs.concurrent.Execution.Implicits._
+
+        futureAccountBalance.map {
+          accountBalances => {
+            Logger.debug("future fulfuilled sending json ab for " + userId)
+            Ok(Json.toJson(accountBalances))
+          }
         }
       }
   }

@@ -8,6 +8,7 @@ GET     /getAccountBalances             controllers.Application.getAccountBalanc
 POST    /getAccountBalancesBlocking     controllers.Application.getAccountBalancesBlocking
 POST    /asyncOneGetAccountBalances     controllers.Application.asyncOneGetAccountBalances
 POST    /asyncTwoGetAccountBalances     controllers.Application.asyncTwoGetAccountBalances
+POST    /asyncThreeGetAccountBalances   controllers.Application.asyncThreeGetAccountBalances
 GET     /accountBalancesWS              controllers.Application.accountBalancesWS
 GET    /getAccountBalancesWS            controllers.Application.getAccountBalancesWS
 

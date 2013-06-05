@@ -15,6 +15,8 @@ object Global extends GlobalSettings {
 
     lazy val accountBalanceActor = Akka.system().actorOf(Props(new AccountBalanceActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceActor")
 
+    lazy val accountBalanceSecondActor = Akka.system().actorOf(Props(new AccountBalanceSecondActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceActor")
+
     lazy val accountBalanceWSActor = Akka.system().actorOf(Props(new AccountBalanceWSActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceWSActor")
 
   override def onStart(app: Application) {

@@ -10,17 +10,20 @@ import play.api.libs.json._
 import play.api.libs.iteratee._
 
 import play.api.libs.concurrent.Execution.Implicits._
+
 // intellij always deletes this import, so I keep a copy for easy reference
 // import play.api.libs.concurrent.Execution.Implicits._
 
-class AccountBalanceWSActor(checkingAccounts: ActorRef,
+class AccountBalanceSecondActor(checkingAccounts: ActorRef,
                             savingsAccounts: ActorRef,
                             moneyMarketAccounts: ActorRef) extends Actor with ActorLogging {
 
   implicit val timeout: Timeout = 5 seconds
 
   def receive = {
-    case GetCustomerAccountBalancesWS(userId, channel) =>
+    case GetCustomerAccountBalances(userId) =>
+
+      var originalSender: ActorRef = sender
 
       val futChecking = checkingAccounts ? GetCustomerAccountBalances(userId)
       val futSavings = savingsAccounts ? GetCustomerAccountBalances(userId)
@@ -36,9 +39,7 @@ class AccountBalanceWSActor(checkingAccounts: ActorRef,
 
       futBalances map {
         accountBalances =>
-          channel.push(Json.toJson(accountBalances))
+          originalSender ! accountBalances
       }
   }
 }
-
-case class GetCustomerAccountBalancesWS(userId: Long, channel: Concurrent.Channel[JsValue])

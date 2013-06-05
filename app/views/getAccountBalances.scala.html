@@ -22,6 +22,10 @@
             retrieveAccountBalances("asyncTwoGetAccountBalances");
         });
 
+        $("#asyncThreeRetrieveSubmit").bind('click', function () {
+            retrieveAccountBalances("asyncThreeGetAccountBalances");
+        });
+
     });
 
     function retrieveAccountBalances(retrieveUrl) {
@@ -92,8 +96,9 @@
 
 <H3>Enter User ID to Retrieve: <input type="text" id="userId" value="1"/></H3>
 <input type="submit" value="Blocking Retrieve" id="blockingRetrieveSubmit"/>
-<input type="submit" value="Async Retrieve - Step One " id="asyncOneRetrieveSubmit"/>
-<input type="submit" value="Async Retrieve - Step Two" id="asyncTwoRetrieveSubmit"/>
+<input type="submit" value="Async Retrieve - One " id="asyncOneRetrieveSubmit"/>
+<input type="submit" value="Async Retrieve - Two" id="asyncTwoRetrieveSubmit"/>
+<input type="submit" value="Async Retrieve - Three" id="asyncThreeRetrieveSubmit"/>
 
 <H3>Time to Load Account Balances: <span id="loadTime" /> milliseconds</H3>
 <H3>Checking Accounts</H3>
