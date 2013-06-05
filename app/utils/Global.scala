@@ -7,19 +7,15 @@ import controllers._
 
 object Global extends GlobalSettings {
 
-  lazy val accountBalanceActorService = {
-    val checkingAccountProxy = Akka.system().actorOf(Props(new CheckingAccountsProxyStub()), "checkingAccountProxy")
-    val savingsAccountProxy = Akka.system().actorOf(Props(new SavingsAccountsProxyStub()), "savingsAccountProxy")
-    val moneyMarketAccountProxy = Akka.system().actorOf(Props(new MoneyMarketAccountsProxyStub()), "moneyMarketAccountsProxyStub")
-    new AccountBalanceActorService(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)
-  }
+    lazy val checkingAccountProxy = Akka.system().actorOf(Props(new CheckingAccountsProxyStub()), "checkingAccountProxy")
+    lazy val savingsAccountProxy = Akka.system().actorOf(Props(new SavingsAccountsProxyStub()), "savingsAccountProxy")
+    lazy val moneyMarketAccountProxy = Akka.system().actorOf(Props(new MoneyMarketAccountsProxyStub()), "moneyMarketAccountsProxyStub")
 
-  lazy val accountBalanceFullActor = {
-    val checkingAccountProxy = Akka.system().actorOf(Props(new CheckingAccountsProxyStub2()), "checkingAccountProxy")
-    val savingsAccountProxy = Akka.system().actorOf(Props(new SavingsAccountsProxyStub2()), "savingsAccountProxy")
-    val moneyMarketAccountProxy = Akka.system().actorOf(Props(new MoneyMarketAccountsProxyStub2()), "moneyMarketAccountsProxyStub")
-    Akka.system().actorOf(Props(new AccountBalanceFullActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceService")
-  }
+    lazy val accountBalanceActorService = new AccountBalanceActorService(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)
+
+    lazy val accountBalanceActor = Akka.system().actorOf(Props(new AccountBalanceActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceActor")
+
+    lazy val accountBalanceWSActor = Akka.system().actorOf(Props(new AccountBalanceWSActor(checkingAccountProxy, savingsAccountProxy, moneyMarketAccountProxy)), "accountBalanceWSActor")
 
   override def onStart(app: Application) {
 

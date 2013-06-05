@@ -1,52 +1,13 @@
 package controllers
 
 import models._
-import models.AccountBalances
-import scala.Some
-import models.MoneyMarketAccountBalances
-import akka.actor.{Actor, ActorRef, ActorLogging}
-import models.GetCustomerAccountBalances
-import akka.pattern.ask
-import akka.util.Timeout
-import scala.concurrent.duration._
-
-import akka.pattern.pipe
-
-import play.api.libs.concurrent.Execution.Implicits._
-//import play.api.libs.concurrent.Execution.Implicits._
+import akka.actor.ActorLogging
 
 /**
  * Partially Copied from Jamie Allen - https://github.com/jamie-allen/effective_akka
  */
 
-
-class AccountBalanceFullActor(checkingAccounts: ActorRef,
-                            savingsAccounts: ActorRef,
-                            moneyMarketAccounts: ActorRef) extends Actor with ActorLogging {
-
-
-  implicit val timeout: Timeout = 5 seconds
-
-  def receive = {
-    case GetCustomerAccountBalances(userId: Long) =>
-      val futChecking = checkingAccounts ? GetCustomerAccountBalances(userId)
-      val futSavings = savingsAccounts ? GetCustomerAccountBalances(userId)
-      val futMM = moneyMarketAccounts ? GetCustomerAccountBalances(userId)
-
-      val futBalances = for {
-        checking <- futChecking.mapTo[CheckingAccountBalances]
-        savings <- futSavings.mapTo[SavingsAccountBalances]
-        mm <- futMM.mapTo[MoneyMarketAccountBalances]
-      } yield {
-        AccountBalances(checking.balances, savings.balances, mm.balances)
-      }
-
-      futBalances pipeTo sender
-  }
-}
-
-
-class CheckingAccountsProxyStub2 extends CheckingAccountsProxy with ActorLogging {
+class CheckingAccountsProxyStub extends CheckingAccountsProxy with ActorLogging {
 
   val accountData = Map[Long, List[(Long, BigDecimal)]](
     1L -> List((3, 15000)),
@@ -64,7 +25,7 @@ class CheckingAccountsProxyStub2 extends CheckingAccountsProxy with ActorLogging
   }
 }
 
-class SavingsAccountsProxyStub2 extends SavingsAccountsProxy with ActorLogging {
+class SavingsAccountsProxyStub extends SavingsAccountsProxy with ActorLogging {
 
   val accountData = Map[Long, List[(Long, BigDecimal)]](
     1L -> (List((1, 150000), (2, 29000))),
@@ -81,7 +42,7 @@ class SavingsAccountsProxyStub2 extends SavingsAccountsProxy with ActorLogging {
   }
 }
 
-class MoneyMarketAccountsProxyStub2 extends MoneyMarketAccountsProxy with ActorLogging {
+class MoneyMarketAccountsProxyStub extends MoneyMarketAccountsProxy with ActorLogging {
 
   val accountData = Map[Long, List[(Long, BigDecimal)]](
     2L -> List((9, 640000), (10, 1125000), (11, 40000)))

@@ -1,0 +1,101 @@
+@()(implicit request: RequestHeader)
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title></title>
+</head>
+
+<script src="http://code.jquery.com/jquery-1.7.2.js" type="text/javascript"></script>
+
+<script>
+
+    $(function () {
+
+        $("#onError").hide()
+
+        $("#getAccountBalancesWS").bind('click', function () {
+            retrieveAccountBalances();
+        });
+
+        var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
+        var serverSocket = new WS("@routes.Application.getAccountBalancesWS().webSocketURL()")
+
+        var start
+
+        serverSocket.onmessage = function (event) {
+            var data = JSON.parse(event.data)
+            console.log(data)
+
+            //the json is a nested array, need to fix serialization from play
+            //for now just get the first element in the array
+            var checkingBalances = data.checking[0]
+            checkingBalances.forEach(function (accountAndBalance) {
+                $("#checkingAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+            })
+
+            var savingsBalances = data.savings[0]
+            savingsBalances.forEach(function (accountAndBalance) {
+                $("#savingAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+            })
+
+
+            var moneyMarketBalances = data.moneyMarket[0]
+            moneyMarketBalances.forEach(function (accountAndBalance) {
+                $("#moneyMarketAccountList").append("<li>" + accountAndBalance.accountId + " =>  " + accountAndBalance.balance + "</li>")
+            })
+
+            var end = new Date().getTime();
+            var time = end - start;
+            $("#loadTime").append(time)
+        }
+
+        function retrieveAccountBalances() {
+
+            start = new Date().getTime();
+            $("#loadTime").empty()
+            $("#checkingAccountList").empty()
+            $("#savingAccountList").empty()
+            $("#moneyMarketAccountList").empty()
+
+            var userId = $("#userId").val()
+            var userIdJson = JSON.stringify({userId: userId})
+            console.log("sending " + userIdJson)
+            serverSocket.send(userIdJson)
+        }
+
+    })
+
+</script>
+
+
+<body>
+
+<H3>Enter User ID to Retrieve: <input type="text" id="userId" value="1"/></H3>
+<input type="submit" value="Retrieve via Web Sockets" id="getAccountBalancesWS"/>
+
+
+<div id="onError" class="alert-message error">
+    <p>
+        <strong>Oops!</strong> <span></span>
+    </p>
+</div>
+
+
+<H3>Time to Load Account Balances: <span id="loadTime"/> milliseconds</H3>
+
+<H3>Checking Accounts</H3>
+<ul id="checkingAccountList">
+</ul>
+
+<H3>Savings Accounts</H3>
+<ul id="savingAccountList">
+</ul>
+
+<H3>Money Market Accounts</H3>
+<ul id="moneyMarketAccountList">
+</ul>
+
+</body>
+</html>
+
