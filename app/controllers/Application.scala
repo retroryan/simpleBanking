@@ -104,24 +104,22 @@ object Application extends Controller {
   /**
    * Handles the chat websocket.
    */
-  def getAccountBalancesWS() = WebSocket.async[JsValue] {
+  def getAccountBalancesWS() = WebSocket.using[JsValue] {
     implicit request =>
+      val iteratee = Promise[Iteratee[JsValue, Unit]]()
+      val enumerator = Concurrent.unicast[JsValue](onStart = { clientChannel =>
+          iteratee.success(Iteratee.foreach[JsValue] {
+            userIdJson => {
+              val userId = (userIdJson \ "userId").as[String].toLong
+              Global.accountBalanceWSActor ! GetCustomerAccountBalancesWS(userId, clientChannel)
+            }
+          }.mapDone {
+            _ =>
+              Logger.debug("disconnected client channel")
+          })
+      })
 
-      val (enumerator, clientChannel) = Concurrent.broadcast[JsValue]
-
-      // Create an Iteratee to recieve the user id
-      val iteratee = Iteratee.foreach[JsValue] {
-        userIdJson => {
-          val userId = (userIdJson \ "userId").as[String].toLong
-          Global.accountBalanceWSActor ! GetCustomerAccountBalancesWS(userId, clientChannel)
-        }
-      }.mapDone {
-        _ =>
-          Logger.debug("disconnected client channel")
-      }
-
-      import play.api.libs.concurrent.Execution.Implicits._
-      Future((iteratee, enumerator))
+      (Iteratee.flatten(iteratee.future), enumerator)
 
 
   }
