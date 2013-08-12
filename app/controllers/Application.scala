@@ -85,7 +85,7 @@ object Application extends Controller {
 
         futureAccountBalance.map {
           accountBalances => {
-            Logger.debug("future fulfuilled sending json ab for " + userId)
+            Logger.debug("future fullfilled sending json ab for " + userId)
             Ok(Json.toJson(accountBalances))
           }
         }
