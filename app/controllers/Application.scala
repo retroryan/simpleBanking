@@ -101,10 +101,29 @@ object Application extends Controller {
       Ok(views.html.accountBalancesWS())
   }
 
-  /**
-   * Handles the chat websocket.
-   */
+
   def getAccountBalancesWS() = WebSocket.using[JsValue] {
+    implicit request =>
+      val iteratee = Promise[Iteratee[JsValue, Unit]]()
+      val enumerator = Concurrent.unicast[JsValue](onStart = { clientChannel =>
+        iteratee.success(Iteratee.foreach[JsValue] {
+          userIdJson => {
+            val userId = (userIdJson \ "userId").as[String].toLong
+            Global.accountBalanceWSActor ! GetCustomerAccountBalancesWS(userId, clientChannel)
+          }
+        }.mapDone {
+          _ =>
+            Logger.debug("disconnected client channel")
+        })
+      })
+
+      (Iteratee.flatten(iteratee.future), enumerator)
+  }
+
+  /**
+   * Handles the account balances websocket.
+   */
+  def OLDgetAccountBalancesWS() = WebSocket.using[JsValue] {
     implicit request =>
       val iteratee = Promise[Iteratee[JsValue, Unit]]()
       val enumerator = Concurrent.unicast[JsValue](onStart = { clientChannel =>
@@ -120,7 +139,5 @@ object Application extends Controller {
       })
 
       (Iteratee.flatten(iteratee.future), enumerator)
-
-
   }
 }

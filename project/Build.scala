@@ -13,8 +13,10 @@ object ApplicationBuild extends Build {
     anorm
   )
 
+ lazy val scct_settings = Defaults.defaultSettings ++ Seq(ScctPlugin.instrumentSettings: _*)
 
-  val main = play.Project(appName, appVersion, appDependencies).settings(
+
+  val main = play.Project(appName, appVersion, appDependencies,settings = scct_settings).settings(
     // Add your own project settings here      
   )
 
